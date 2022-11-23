@@ -26,7 +26,6 @@ connectDb()
           getDatabaseRecords(notion, dbId)
           .then(getResponseObject)
             .then(results => {
-                console.log(JSON.stringify(results));
                 response.send(results);
             });
         })
@@ -69,7 +68,6 @@ async function getDatabaseRecords(notion: any, dbId: string) {
       database_id: dbId,
   });
 
-  console.log(JSON.stringify(response.results));
   return response.results;
 }
 
