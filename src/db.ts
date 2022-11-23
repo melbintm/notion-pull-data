@@ -8,6 +8,7 @@ const client = new Client({
     database: process.env.DB_DBNAME,
     password: process.env.DB_PASSWORD,
     port: 5432,
+    ssl: process.env.DB_SSL == 'true' || false,
 })
 
 export const connectDb =  (): any => {

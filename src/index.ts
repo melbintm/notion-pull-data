@@ -26,6 +26,7 @@ connectDb()
           getDatabaseRecords(notion, dbId)
           .then(getResponseObject)
             .then(results => {
+                console.log(JSON.stringify(results));
                 response.send(results);
             });
         })
@@ -68,6 +69,7 @@ async function getDatabaseRecords(notion: any, dbId: string) {
       database_id: dbId,
   });
 
+  console.log(JSON.stringify(response.results));
   return response.results;
 }
 
@@ -77,8 +79,11 @@ const getResponseObject = (results: any[]) => {
   }
   
   const readExpense = (result: any) => {
-    const expense = {};
-    return result.properties ? readProperties(result.properties) : {};
+    const expense = result.properties ? readProperties(result.properties) : {};
+    expense.id = result.id;
+    expense.createdTime = result.created_time;
+    expense.lastEditedTime = result.last_edited_time;
+    return expense;
   };
   
   const readProperties = (properties: any) => {
