@@ -19,14 +19,6 @@ connectDb()
 
     app.get('/hello', (request, response) => response.send('hello world'));
 
-    // app.get('/expense', (request, response) => {
-    //     getExpenses(notion)
-    //         .then(getResponseObject)
-    //         .then(results => {
-    //             response.send(results);
-    //         });
-    // });
-
     app.get('/db/:name', (request, response) => {
       console.log('db called', request.params.name);
       getNotionDbId(request.params.name)
