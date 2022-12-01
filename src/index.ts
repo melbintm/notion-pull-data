@@ -10,21 +10,22 @@ import service from './service';
 const PORT = process.env.PORT || 2200;
 
 const app = express();
+app.set('view engine', 'ejs');
 
 connectDb()
-    .then(() => console.log('Connected to Database'))
-    .then(connectNotion)
-    .then((notion: any) => {
-        service.setNotionClient(notion);
-        console.log('Connected to Notion API');
+.then(() => console.log('Connected to Database'))
+.then(connectNotion)
+.then((notion: any) => {
+    service.setNotionClient(notion);
+    console.log('Connected to Notion API');
 
-        app.use(router);
+    app.use(router);
 
-        app.listen(PORT, () => {
-            console.log('Listening to', PORT)
-        });
-    })
-    .catch((err: any) => {~~
-        console.error(err);
-        process.exit(1);
+    app.listen(PORT, () => {
+        console.log('Listening to', PORT)
     });
+})
+.catch((err: any) => {~~
+    console.error(err);
+    process.exit(1);
+});

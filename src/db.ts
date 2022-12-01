@@ -15,11 +15,11 @@ export const connectDb =  (): any => {
 
 export const getNotionDbId = (dbName: string): any => {
     return client.query('select id, db_id, name from dbList where name=$1', [dbName])
-        .then(result => {
-            if (result.rows && result.rows.length) {
-                return result.rows[0].db_id;
-            } else {
-                throw 'not found';
-            }
-        });
+    .then(result => {
+        if (result.rows && result.rows.length) {
+            return result.rows[0].db_id;
+        } else {
+            throw 'not found';
+        }
+    });
 }

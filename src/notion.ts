@@ -49,29 +49,14 @@ export const readProperty: any = (property: any) => {
         return readTitle(property);
     } else if (type == 'relation') {
         return readRelation(property);
-    /*} else if (type == 'rollup') {
-        const rollupType =  property[type] &&
-            property[type].type;
-        if (rollupType == 'array' && property[type][rollupType].length) {
-            const rollupValueType = property[type][rollupType][0].type;
-            if (rollupValueType == 'title') {
-            return property[type][rollupType][0].title[0].plain_text;
-            } else if (rollupValueType == 'formula') {
-            const formulaType = property[type][rollupType][0].formula.type;
-            return property[type][rollupType][0].formula[formulaType];
-            }
-
-            return null;
-        } else {
-            return null;
-        }
-    }*/
     } else if (type == 'rollup') {
         return readRollup(property);
     } else if (type == 'boolean') {
         return readBoolean(property);
     } else if (type == 'array') {
         return readArray(property);
+    } else if (type == 'select') {
+        return readSelect(property);
     } else {
         return null;
     }
@@ -108,7 +93,6 @@ const readArray = (property: any) => {
 }
 
 const readRelation = (property: any) => {
-
     const relationValue = property['relation'];
     if (relationValue instanceof Array) {
         if (relationValue.length && relationValue.length == 1) {
@@ -119,4 +103,8 @@ const readRelation = (property: any) => {
     }
 
     return null;
+}
+
+const readSelect = (property: any) => {
+    return property['select']? property['select'].name : null;
 }
