@@ -1,4 +1,5 @@
 import { Client } from '@notionhq/client';
+import Forecast from './Forecast';
 
 export async function connectNotion() {
     return new Client({
@@ -6,7 +7,7 @@ export async function connectNotion() {
     });
 }
 
-export async function getDatabaseRecords(notion: any, dbId: string) {
+export async function getAllRecords(notion: any, dbId: string) {
     const response = await notion.databases.query({
         database_id: dbId,
     });
@@ -18,15 +19,27 @@ export const getResponseObject = (results: any[]) => {
     const result = results.map(readRecord);
     return result;
 }
-    
-export const readRecord = (result: any) => {
+
+export const getOneRecord = (notion: any, recordId: string) => {
+    return notion.pages.retrieve({page_id: recordId});
+}
+
+export const createRecord = async (notion: any, dbId: string, record: any) => {
+    await notion.pages.create({parent: {type: 'database_id', database_id: dbId}, properties: record});
+}
+
+export const updateRecord = async (notion: any, recordId: string, record: any) => {
+    await notion.pages.update({page_id: recordId, properties: record});
+}
+
+const readRecord = (result: any) => {
     const record = result.properties ? readProperties(result.properties) : {};
     record.id = result.id;
     record.createdTime = result.created_time;
     record.lastEditedTime = result.last_edited_time;
     return record;
 };
-    
+
 export const readProperties = (properties: any) => {
     const keys = Object.keys(properties);
     const property: any = {};
@@ -37,7 +50,7 @@ export const readProperties = (properties: any) => {
     return property;
 }
 
-export const readProperty: any = (property: any) => {
+const readProperty: any = (property: any) => {
     const type = property.type;
     if (type == 'date') {
         return readDate(property);
@@ -53,6 +66,8 @@ export const readProperty: any = (property: any) => {
         return readRollup(property);
     } else if (type == 'boolean') {
         return readBoolean(property);
+    } else if (type == 'checkbox') {
+        return readCheckbox(property);
     } else if (type == 'array') {
         return readArray(property);
     } else if (type == 'select') {
@@ -62,6 +77,32 @@ export const readProperty: any = (property: any) => {
     }
 }
 
+export const generateForecastRecords = (name: string, start: string, end: string, amount: number, interval: string, realm: string, recurringExpenseId: string) => {
+    return getDatesByInterval(start, end, interval)
+    .map(period => {
+        return new Forecast(name, period, amount, realm, 'Planned', recurringExpenseId);
+    });
+}
+
+const getDatesByInterval = (start: string, end: string, interval: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    let currentDate = startDate;
+    const dateIntervals: string[] = [];
+    while(currentDate <= endDate) {
+        dateIntervals.push(currentDate.toISOString());
+        if (interval == 'Monthly') { 
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        } else if (interval == 'Annually') {
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
+        } else {
+            break;
+        }
+    }
+
+    return dateIntervals;
+}
+
 const readDate = (property: any) => property['date'] && property['date'].start;
 
 const readNumber = (property: any) => property['number'];
@@ -69,6 +110,8 @@ const readNumber = (property: any) => property['number'];
 const readFormula = (property: any) => readProperty(property['formula']);
 
 const readBoolean = (property: any) => property['boolean'];
+
+const readCheckbox = (property: any) => property['checkbox'];
 
 const readTitle = (property: any) => {
     if (property['title'] && property['title'].length) {
