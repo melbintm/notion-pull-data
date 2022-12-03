@@ -1,5 +1,6 @@
 import { Client } from '@notionhq/client';
 import Forecast from './Forecast';
+import IncomeForecast from './IncomeForecast'
 
 export async function connectNotion() {
     return new Client({
@@ -81,6 +82,13 @@ export const generateForecastRecords = (name: string, start: string, end: string
     return getDatesByInterval(start, end, interval)
     .map(period => {
         return new Forecast(name, period, amount, realm, 'Planned', recurringExpenseId);
+    });
+}
+
+export const generateIncomeForecastRecords = (name: string, start: string, end: string, amount: number, interval: string, recurringIncomeId: string) => {
+    return getDatesByInterval(start, end, interval)
+    .map(period => {
+        return new IncomeForecast(name, period, amount, 'Planned', recurringIncomeId);
     });
 }
 

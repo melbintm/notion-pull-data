@@ -8,8 +8,10 @@ import {
     generateForecastRecords,
     createRecord,
     updateRecord,
+    generateIncomeForecastRecords,
 } from './notion';
 import RecurringExpense from './RecurringExpense';
+import RecurringIncome from './RecurringIncome';
 import { getNotionDbId } from './db';
 
 const router = express.Router();
@@ -66,7 +68,6 @@ router.get('/create/forecastByRecurringExpense/:recurringExpenseId', (request, r
         })
         .then((result: any) => {
             if (result.length > 0) {
-                // TODO: Update Recurring Expense with Forecasted as true
                 return updateRecord(service.getNotionClient(), request.params.recurringExpenseId, (new RecurringExpense(true)).getNotionRecord())
             }
             return '';
@@ -74,6 +75,47 @@ router.get('/create/forecastByRecurringExpense/:recurringExpenseId', (request, r
         .then((result: any) => {
             response.send(result);
         });
+    });
+});
+
+router.get('/create/forecastByRecurringIncome/:recurringIncomeId', (request, response) => {
+    console.log('API called.');
+    let forecastDbId = '';
+    getNotionDbId('Income Forecast')
+    .then((queriedForecastDbId: string) => {
+        forecastDbId = queriedForecastDbId;
+    })
+    .then(() => {
+        return getOneRecord(service.getNotionClient(), request.params.recurringIncomeId)
+        .then((result: any) => result.properties)
+        .then(readProperties)
+        .then((recurringIncomeRecord: any) => {
+            if (recurringIncomeRecord.Forecasted == null || !recurringIncomeRecord.Forecasted) {
+                return generateIncomeForecastRecords(
+                    recurringIncomeRecord.Name,
+                    recurringIncomeRecord['Start Date'],
+                    recurringIncomeRecord['End Date'],
+                    recurringIncomeRecord['Total Amount'],
+                    recurringIncomeRecord.Interval,
+                    request.params.recurringIncomeId,
+                );
+            }
+
+            return [];
+        })
+        .then((forecastRecords: any) => {
+            return Promise.all(forecastRecords.map((forecastRecord: any) => createRecord(service.getNotionClient(), forecastDbId, forecastRecord.getNotionRecord())));
+        })
+        .then((result: any) => {
+            if (result.length > 0) {
+                return updateRecord(service.getNotionClient(), request.params.recurringIncomeId, (new RecurringIncome(true)).getNotionRecord())
+            }
+            return '';
+        });
+    })
+    .then((result: any) => {
+        console.log(result);
+        response.send(result);
     });
 });
 
